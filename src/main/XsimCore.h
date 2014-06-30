@@ -1,19 +1,43 @@
 #ifndef XSIM_CORE_H
 #define XSIM_CORE_H
 
-#include "KernelInterface.h"
 #include <map>
 #include <queue>
 #include <unordered_set>
 
-namespace xsim {
+#include "KernelInterface.h"
+#include "XsimTypedefs.h"
+#include "FutureEvents.h"
 
-typedef void (*FunctionPtr)(void*);
+namespace xsim {
 
 /**
  * The simulator kernel core, which runs the main simulator loop.
  */
 class XsimCore {
+
+private:
+
+    /**
+     * The simulator time.
+     */
+    Time time = 0;
+
+    /**
+     * The list of future events.
+     */
+    FutureEvents futureEvents;
+
+    /**
+     * Map of function user data.
+     */
+    std::map<FunctionPtr, void*> functionUserData;
+
+    /**
+     * Map of signals and the functions they trigger.
+     */
+    std::map<void*, std::unordered_set<FunctionPtr>* > signalFunctions;
+
 public:
 
     /**
@@ -48,29 +72,6 @@ public:
      * @param blocking Flag indicating whether the update is blocking.
      */
     void signalUpdate(void* signal, XsimBlockingEnum blocking);
-
-private:
-    /**
-     * The simulator time.
-     */
-    unsigned long time = 0;
-
-    /**
-     * Map of function user data.
-     */
-    std::map<FunctionPtr, void*> functionUserData;
-
-    /**
-     * Map of signals and the functions they trigger.
-     */
-    std::map<void*, std::unordered_set<FunctionPtr>* > signalFunctions;
-
-    /**
-     * Queue of functions to execute at the new time.
-     * TODO: Combine these into one class.
-     */
-    std::queue<FunctionPtr> futureFunctionQueue;
-    std::unordered_set<FunctionPtr> futureFunctionSet;
 
 };
 

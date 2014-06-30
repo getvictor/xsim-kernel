@@ -1,6 +1,6 @@
-#include "XsimCore.h"
-
 #include <iostream>
+
+#include "XsimCore.h"
 
 namespace xsim {
 
@@ -13,19 +13,18 @@ XsimCore::~XsimCore() {
 
 void XsimCore::startSim() {
 
-    // This version runs 10 ticks.
-    while (time < 10) {
+    while (!futureEvents.isEmpty()) {
+        TimeSliceEvent* event = futureEvents.getNextEvent();
+        time = event->getTime();
         std::cout << "Time: " << time << std::endl;
 
-        // Process functions from the function queue.
-        while (!futureFunctionQueue.empty()) {
-            FunctionPtr function = futureFunctionQueue.front();
+        while (!event->isEmpty()) {
+            FunctionPtr function = event->popNextFunction();
             // Execute function
             function(functionUserData[function]);
-            futureFunctionQueue.pop();
-            futureFunctionSet.erase(function);
         }
-        time++;
+
+        futureEvents.removeFirstEvent();
     }
 
 }
@@ -44,10 +43,9 @@ void XsimCore::registerFunction(FunctionPtr function, void* userData, int number
         functionUserData[function] = userData;
     }
 
-    if (futureFunctionSet.find(function) == futureFunctionSet.end()) {
-        futureFunctionSet.insert(function);
-        futureFunctionQueue.push(function);
-    }
+    // Schedule the function for execution.
+    TimeSliceEvent* event = futureEvents.getNextEvent();
+    event->scheduleFunction(function);
 
 }
 
@@ -59,11 +57,9 @@ void XsimCore::signalUpdate(void* signal, XsimBlockingEnum blocking) {
     // Signal updates trigger function execution.
     if (signalFunctions.find(signal) != signalFunctions.end()) {
         std::unordered_set<FunctionPtr>* set = signalFunctions[signal];
+        TimeSliceEvent* event = futureEvents.getNextEvent();
         for (const FunctionPtr& function : *set) {
-            if (futureFunctionSet.find(function) == futureFunctionSet.end()) {
-                futureFunctionSet.insert(function);
-                futureFunctionQueue.push(function);
-            }
+            event->scheduleFunction(function);
         }
     }
 
