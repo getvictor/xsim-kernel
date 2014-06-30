@@ -8,6 +8,8 @@
 
 namespace xsim {
 
+typedef void (*FunctionPtr)(void*);
+
 /**
  * The simulator kernel core, which runs the main simulator loop.
  */
@@ -22,6 +24,11 @@ public:
     }
 
     /**
+     * Destructor.
+     */
+    ~XsimCore();
+
+    /**
      * Start the simulation.
      */
     void startSim();
@@ -29,10 +36,11 @@ public:
     /**
      * Register a function with the simulator kernel. Functions cannot take time.
      * @param function The function.
+     * @param userData The user data to pass the function.
      * @param numberOfSignals The number of signals that the function is sensitive to.
      * @param signals The array of signals the function is sensitive to.
      */
-    void registerFunction(void (*function)(), int numberOfSignals, void* signals[]);
+    void registerFunction(FunctionPtr function, void* userData, int numberOfSignals, void* signals[]);
 
     /**
      * Tell the simulator kernel that a signal has been updated.
@@ -48,16 +56,21 @@ private:
     unsigned long time = 0;
 
     /**
+     * Map of function user data.
+     */
+    std::map<FunctionPtr, void*> functionUserData;
+
+    /**
      * Map of signals and the functions they trigger.
      */
-    std::map<void*, void (*)()> signalFunctions;
+    std::map<void*, std::unordered_set<FunctionPtr>* > signalFunctions;
 
     /**
      * Queue of functions to execute at the new time.
      * TODO: Combine these into one class.
      */
-    std::queue<void (*)()> futureFunctionQueue;
-    std::unordered_set<void (*)()> futureFunctionSet;
+    std::queue<FunctionPtr> futureFunctionQueue;
+    std::unordered_set<FunctionPtr> futureFunctionSet;
 
 };
 

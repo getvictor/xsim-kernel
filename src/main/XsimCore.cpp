@@ -4,29 +4,44 @@
 
 namespace xsim {
 
+XsimCore::~XsimCore() {
+    // For each entry in signal functions, delete the set.
+    for (const auto& entry : signalFunctions) {
+        delete entry.second;
+    }
+}
+
 void XsimCore::startSim() {
 
-    // This version runs 100 ticks.
-    while (time < 100) {
+    // This version runs 10 ticks.
+    while (time < 10) {
         std::cout << "Time: " << time << std::endl;
-        // Process new functions.
+
+        // Process functions from the function queue.
         while (!futureFunctionQueue.empty()) {
-            void (*function)() = futureFunctionQueue.front();
+            FunctionPtr function = futureFunctionQueue.front();
             // Execute function
-            function();
+            function(functionUserData[function]);
             futureFunctionQueue.pop();
+            futureFunctionSet.erase(function);
         }
         time++;
     }
 
 }
 
-void XsimCore::registerFunction(void (*function)(), int numberOfSignals, void* signals[]) {
+void XsimCore::registerFunction(FunctionPtr function, void* userData, int numberOfSignals, void* signals[]) {
 
     // TODO: Add logging.
 
     for (int i = 0; i < numberOfSignals; i++) {
-        signalFunctions[signals[i]] = function;
+        // Insert a new function set if needed
+        if (signalFunctions.find(signals[i]) == signalFunctions.end()) {
+            std::unordered_set<FunctionPtr>* set = new std::unordered_set<FunctionPtr>();
+            signalFunctions[signals[i]] = set;
+        }
+        signalFunctions[signals[i]]->insert(function);
+        functionUserData[function] = userData;
     }
 
     if (futureFunctionSet.find(function) == futureFunctionSet.end()) {
@@ -38,11 +53,18 @@ void XsimCore::registerFunction(void (*function)(), int numberOfSignals, void* s
 
 void XsimCore::signalUpdate(void* signal, XsimBlockingEnum blocking) {
 
+    int* signalPtr = (int*) signal;
+    std::cout << "Update signal " << (*signalPtr) << std::endl;
+
     // Signal updates trigger function execution.
-    void (*function)() = signalFunctions[signal];
-    if (futureFunctionSet.find(function) == futureFunctionSet.end()) {
-        futureFunctionSet.insert(function);
-        futureFunctionQueue.push(function);
+    if (signalFunctions.find(signal) != signalFunctions.end()) {
+        std::unordered_set<FunctionPtr>* set = signalFunctions[signal];
+        for (const FunctionPtr& function : *set) {
+            if (futureFunctionSet.find(function) == futureFunctionSet.end()) {
+                futureFunctionSet.insert(function);
+                futureFunctionQueue.push(function);
+            }
+        }
     }
 
 }
