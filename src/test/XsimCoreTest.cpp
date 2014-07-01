@@ -5,11 +5,6 @@
 
 using namespace xsim;
 
-TEST(DummyTest, Dummy) {
-    std::cout << "Hello Google Test!" << std::endl;
-    EXPECT_EQ(1, 1);
-}
-
 // Test fixture.
 class XsimCoreTest : public testing::Test {
 public:
@@ -32,6 +27,13 @@ public:
     }
     static void sampleFunction2Wrapper(void* userData) {
         ((XsimCoreTest*)userData)->sampleFunction2();
+    }
+    void sampleCoroutine1() {
+        std::cout << "Sample Coroutine 1" << std::endl;
+        executionCounter++;
+    }
+    static void sampleCoroutine1Wrapper(void* userData) {
+        ((XsimCoreTest*)userData)->sampleCoroutine1();
     }
 
     /**
@@ -61,7 +63,7 @@ TEST_F(XsimCoreTest, Ctor) {
     xsimCorePtr->registerFunction(XsimCoreTest::sampleFunction1Wrapper, this, 1, signals1);
     xsimCorePtr->registerFunction(XsimCoreTest::sampleFunction2Wrapper, this, 1, signals2);
     xsimCorePtr->startSim();
-    EXPECT_EQ(12, executionCounter);
+    ASSERT_EQ(12, executionCounter);
 }
 
 // TODO: 1 signal triggers multiple functions

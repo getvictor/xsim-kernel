@@ -4,6 +4,7 @@
 namespace xsim {
 
 typedef void (*FunctionPtr)(void*);
+typedef void (*CoroutinePtr)(void*);
 typedef unsigned long Time;
 
 }

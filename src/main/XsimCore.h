@@ -67,6 +67,15 @@ public:
     void registerFunction(FunctionPtr function, void* userData, int numberOfSignals, void* signals[]);
 
     /**
+     * Register a coroutine with the simulator kernel. Coroutines can take time.
+     * @param coroutine The coroutine function.
+     * @param userData The user data to pass the coroutine.
+     * @param numberOfSignals The number of signals that the coroutine is sensitive to.
+     * @param signals The array of signals the coroutine is sensitive to.
+     */
+    void registerCoroutine(CoroutinePtr coroutine, void* userData, int numberOfSignals, void* signals[]);
+
+    /**
      * Tell the simulator kernel that a signal has been updated.
      * @param signal The signal that has been updated.
      * @param blocking Flag indicating whether the update is blocking.

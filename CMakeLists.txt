@@ -6,9 +6,13 @@ set (xsim_core_VERSION_MINOR 0)
 
 set (CMAKE_CXX_FLAGS "-std=c++11")
 
+# Add Boost
+find_package(Boost 1.55.0 COMPONENTS coroutine context system REQUIRED)
+
 set(XSIM_INCLUDE src/main)
 file(GLOB XSIM_SRC ${XSIM_INCLUDE}/*.cpp)
 add_library(XsimCore SHARED ${XSIM_SRC})
+
 
 # Google Test
 set(GTEST_REVISION "690")
@@ -43,7 +47,7 @@ set_target_properties(GTestMain PROPERTIES
 
 add_dependencies(GTest GTestExternal)
 
-include_directories("${GTEST_INCLUDE}" ${XSIM_INCLUDE})
+include_directories(${GTEST_INCLUDE} ${Boost_INCLUDE_DIRS} ${XSIM_INCLUDE})
 file(GLOB TEST_SRC src/test/*.cpp)
 add_executable(test ${TEST_SRC})
-target_link_libraries(test GTestMain XsimCore)
+target_link_libraries(test GTestMain XsimCore ${Boost_LIBRARIES})
