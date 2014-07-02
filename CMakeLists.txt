@@ -4,7 +4,9 @@ project (xsim_core)
 set (xsim_core_VERSION_MAJOR 1)
 set (xsim_core_VERSION_MINOR 0)
 
-set (CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O3")
 
 # Add Boost
 find_package(Boost 1.55.0 COMPONENTS coroutine context system REQUIRED)

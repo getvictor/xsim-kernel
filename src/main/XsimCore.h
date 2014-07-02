@@ -38,6 +38,16 @@ private:
      */
     std::map<void*, std::unordered_set<FunctionPtr>* > signalFunctions;
 
+    /**
+     * Map of signals and the coroutines they trigger.
+     */
+    std::map<void*, std::unordered_set<Coroutine*>* > signalCoroutines;
+
+    /**
+     * Set of all coroutines. Needed for deallocation.
+     */
+    std::unordered_set<Coroutine*> coroutines;
+
 public:
 
     /**
@@ -73,7 +83,7 @@ public:
      * @param numberOfSignals The number of signals that the coroutine is sensitive to.
      * @param signals The array of signals the coroutine is sensitive to.
      */
-    void registerCoroutine(CoroutinePtr coroutine, void* userData, int numberOfSignals, void* signals[]);
+    void registerCoroutine(FunctionPtr coroutine, void* userData, int numberOfSignals, void* signals[]);
 
     /**
      * Tell the simulator kernel that a signal has been updated.

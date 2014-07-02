@@ -9,6 +9,10 @@ XsimCore::~XsimCore() {
     for (const auto& entry : signalFunctions) {
         delete entry.second;
     }
+    // Delete all coroutines.
+    for (Coroutine* entry : coroutines) {
+        delete entry;
+    }
 }
 
 void XsimCore::startSim() {
@@ -19,9 +23,22 @@ void XsimCore::startSim() {
         std::cout << "Time: " << time << std::endl;
 
         while (!event->isEmpty()) {
-            FunctionPtr function = event->popNextFunction();
-            // Execute function
-            function(functionUserData[function]);
+            // Execute coroutines
+            while (!event->isCoroutinesEmpty()) {
+                Coroutine* coroutine = event->popNextCoroutine();
+                // Execute coroutine if it is not already running.
+                if (coroutine->isFinished()) {
+                    coroutine->reset();
+                }
+                coroutine->start();
+            }
+
+            // Execute functions
+            while (!event->isFunctionsEmpty()) {
+                FunctionPtr function = event->popNextFunction();
+                // Execute function
+                function(functionUserData[function]);
+            }
         }
 
         futureEvents.removeFirstEvent();
@@ -33,6 +50,8 @@ void XsimCore::registerFunction(FunctionPtr function, void* userData, int number
 
     // TODO: Add logging.
 
+    functionUserData[function] = userData;
+
     for (int i = 0; i < numberOfSignals; i++) {
         // Insert a new function set if needed
         if (signalFunctions.find(signals[i]) == signalFunctions.end()) {
@@ -40,7 +59,6 @@ void XsimCore::registerFunction(FunctionPtr function, void* userData, int number
             signalFunctions[signals[i]] = set;
         }
         signalFunctions[signals[i]]->insert(function);
-        functionUserData[function] = userData;
     }
 
     // Schedule the function for execution.
@@ -49,24 +67,23 @@ void XsimCore::registerFunction(FunctionPtr function, void* userData, int number
 
 }
 
-void XsimCore::registerCoroutine(CoroutinePtr coroutine, void* userData, int numberOfSignals, void* signals[]) {
+void XsimCore::registerCoroutine(FunctionPtr coroutine, void* userData, int numberOfSignals, void* signals[]) {
 
-    // TODO: Add logging.
-/*
+    Coroutine* coroutinePtr = new Coroutine(coroutine, userData);
     for (int i = 0; i < numberOfSignals; i++) {
-        // Insert a new function set if needed
-        if (signalFunctions.find(signals[i]) == signalFunctions.end()) {
-            std::unordered_set<FunctionPtr>* set = new std::unordered_set<FunctionPtr>();
-            signalFunctions[signals[i]] = set;
+        // Insert a new coroutine set if needed
+        if (signalCoroutines.find(signals[i]) == signalCoroutines.end()) {
+            std::unordered_set<Coroutine*>* set = new std::unordered_set<Coroutine*>();
+            signalCoroutines[signals[i]] = set;
         }
-        signalFunctions[signals[i]]->insert(function);
-        functionUserData[function] = userData;
+        signalCoroutines[signals[i]]->insert(coroutinePtr);
     }
 
-    // Schedule the function for execution.
+    // Schedule the coroutine for execution.
     TimeSliceEvent* event = futureEvents.getNextEvent();
-    event->scheduleFunction(function);
-*/
+    event->scheduleCoroutine(coroutinePtr);
+    coroutines.insert(coroutinePtr);
+
 }
 
 void XsimCore::signalUpdate(void* signal, XsimBlockingEnum blocking) {

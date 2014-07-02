@@ -2,7 +2,7 @@
 
 namespace xsim {
 
-Coroutine::Coroutine(CoroutinePtr coroutine, void* userData) :
+Coroutine::Coroutine(FunctionPtr coroutine, void* userData) :
     coroutine(coroutine),
     userData(userData),
     source([&](boost::coroutines::coroutine<int>::push_type& coroutineSink){
@@ -10,7 +10,7 @@ Coroutine::Coroutine(CoroutinePtr coroutine, void* userData) :
         sink = &coroutineSink;
 
         // The coroutine needs local copies of function pointer and user data.
-        CoroutinePtr myCoroutine = coroutine;
+        FunctionPtr myCoroutine = coroutine;
         void* myUserData = userData;
 
         // We must always stop the coroutine so that we exit the constructor

@@ -16,6 +16,7 @@ private:
 
     /**
      * Linked list of events.
+     * TODO: Replace with priority queue.
      */
     std::forward_list<TimeSliceEvent*> eventList;
 

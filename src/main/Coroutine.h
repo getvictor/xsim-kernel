@@ -17,7 +17,7 @@ private:
     /**
      * The pointer to the user coroutine function.
      */
-    CoroutinePtr coroutine;
+    FunctionPtr coroutine;
 
     /**
      * The user data.
@@ -56,7 +56,7 @@ public:
      * @param coroutine The coroutine function.
      * @param userData The user data for coroutine function.
      */
-    Coroutine(CoroutinePtr coroutine, void* userData);
+    Coroutine(FunctionPtr coroutine, void* userData);
 
     /**
      * Destructor.
