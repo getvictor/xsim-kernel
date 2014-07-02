@@ -11,6 +11,14 @@ namespace xsim {
  * List of future events that the simulator kernel must execute.
  */
 class FutureEvents {
+
+private:
+
+    /**
+     * Linked list of events.
+     */
+    std::forward_list<TimeSliceEvent*> eventList;
+
 public:
 
     /**
@@ -42,11 +50,6 @@ public:
      */
     void removeFirstEvent();
 
-private:
-    /**
-     * Linked list of events.
-     */
-    std::forward_list<TimeSliceEvent*> eventList;
 };
 
 }

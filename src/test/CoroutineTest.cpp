@@ -48,12 +48,43 @@ public:
 };
 
 /**
- * Basic coroutine test.
+ * Basic coroutine test where we run the coroutine once.
  */
 TEST_F(CoroutineTest, basic) {
     coroutinePtr = new Coroutine(CoroutineTest::sampleCoroutineWrapper, this);
     coroutinePtr->start();
     int expectedCount = 0;
+    for (int i = 0; i < 10; i++) {
+        ASSERT_TRUE(coroutinePtr->isStarted());
+        ASSERT_FALSE(coroutinePtr->isFinished());
+        ASSERT_EQ(++expectedCount, executionCounter);
+        coroutinePtr->start();
+    }
+    ASSERT_TRUE(coroutinePtr->isFinished());
+}
+
+/**
+ * Coroutine test where we run the same coroutine twice.
+ */
+TEST_F(CoroutineTest, reentrant) {
+    coroutinePtr = new Coroutine(CoroutineTest::sampleCoroutineWrapper, this);
+    coroutinePtr->start();
+    int expectedCount = 0;
+    for (int i = 0; i < 10; i++) {
+        ASSERT_TRUE(coroutinePtr->isStarted());
+        ASSERT_FALSE(coroutinePtr->isFinished());
+        ASSERT_EQ(++expectedCount, executionCounter);
+        coroutinePtr->start();
+    }
+    ASSERT_TRUE(coroutinePtr->isFinished());
+
+    std::cout << "Play it again." << std::endl;
+
+    // start it again
+    executionCounter = 0;
+    coroutinePtr->reset();
+    coroutinePtr->start();
+    expectedCount = 0;
     for (int i = 0; i < 10; i++) {
         ASSERT_TRUE(coroutinePtr->isStarted());
         ASSERT_FALSE(coroutinePtr->isFinished());

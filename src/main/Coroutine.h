@@ -11,19 +11,29 @@ namespace xsim {
  * The coroutine, which can take time.
  */
 class Coroutine {
-public:
+
+private:
+
+    /**
+     * The pointer to the user coroutine function.
+     */
+    CoroutinePtr coroutine;
+
+    /**
+     * The user data.
+     */
+    void* userData;
 
     /**
      * The coroutine source. Used to start/resume the coroutine.
      */
-    boost::coroutines::coroutine<int>::pull_type *source;
+    boost::coroutines::coroutine<int>::pull_type source;
 
     /**
      * The coroutine sink. Used to pause the coroutine.
      */
     boost::coroutines::coroutine<int>::push_type *sink;
 
-private:
     /**
      * Flag indicating whether the coroutine has started.
      */
@@ -32,7 +42,7 @@ private:
     /**
      * Flag indicating whether the coroutine is paused.
      */
-    bool paused = false;
+    bool paused = true;
 
     /**
      * Flag indicating whether the coroutine is finished.
@@ -52,6 +62,11 @@ public:
      * Destructor.
      */
     ~Coroutine();
+
+    /**
+     * Reset the coroutine for another run.
+     */
+    void reset();
 
     /**
      * Pause the coroutine.
@@ -78,8 +93,7 @@ public:
     }
 
 };
+
 }
-
-
 
 #endif /* COROUTINE_H_ */
