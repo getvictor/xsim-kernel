@@ -4,3 +4,4 @@
 
 # CMake build directory
 /build
+/debug
